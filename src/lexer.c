@@ -2,6 +2,7 @@
 #define LEXER
 
 #include <stdio.h>
+#include <ctype.h>
 
 enum TokenType {
   OPENSYM, CLOSESYM, ADDSYM, NUM
@@ -11,7 +12,7 @@ struct Token {
   enum TokenType type;
   int value;
 };
-  
+
 struct Token getNextToken(FILE * inStream) {
   //Read all the whitespace until arriving at a possible token.
   char c;
@@ -47,7 +48,17 @@ struct Token getNextToken(FILE * inStream) {
   case '8':
   case '9':
     result.type = NUM;
-    int val = (c - '1') + 1;
+
+    int val = c - '0';
+
+    char next = fgetc(inStream);
+    while (isdigit(next)) {
+      val *= 10;
+      val += next - '0';
+      next = fgetc(inStream);
+    }
+
+    ungetc(next, inStream);
     result.value = val;
     break;
   default:
