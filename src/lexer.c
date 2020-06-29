@@ -5,7 +5,7 @@
 #include <ctype.h>
 
 enum TokenType {
-  OPENSYM, CLOSESYM, ADDSYM, NUM
+  OPENSYM, CLOSESYM, ADDSYM, SUBSYM, MULSYM, DIVSYM, NUM
 };
 
 struct Token {
@@ -36,6 +36,15 @@ struct Token getNextToken(FILE * inStream) {
     break;
   case '+':
     result.type = ADDSYM;
+    break;
+  case '-':
+    result.type = SUBSYM;
+    break;
+  case '*':
+    result.type = MULSYM;
+    break;
+  case '/':
+    result.type = DIVSYM;
     break;
   case '0':
   case '1':

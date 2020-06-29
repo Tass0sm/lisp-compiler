@@ -5,14 +5,19 @@
 
 #include "lexer.c"
 
+enum FuncType {
+  ADD, SUB, MUL, DIV
+};
+
 enum ExpressionType {
-  SEXP, ARGS, EPSILON
+  SEXP, FUNC, ARGS, EPSILON
 };
 
 struct Expression {
   enum ExpressionType type;
+  struct Expression * func;
   struct Expression * args;
-  int argValue;
+  int value;
 };
 
 struct Expression getNextExpression(FILE *inStream) {
@@ -21,15 +26,16 @@ struct Expression getNextExpression(FILE *inStream) {
   struct Expression result;
 
   switch (nextToken.type) {
-  case OPENSYM:
+  case OPENSYM: {
     result.type = SEXP;
 
 #ifdef DEBUG
     printf("Parsing Sexp.\n");
 #endif
 
-    // Slurp function (ADDSYM).
-    getNextToken(inStream);
+    // Get Function Expression
+    result.func = malloc(sizeof(struct Expression));
+    *(result.func) = getNextExpression(inStream);
 
 #ifdef DEBUG
     printf("Slurped Addsym.\n");
@@ -45,15 +51,42 @@ struct Expression getNextExpression(FILE *inStream) {
 #endif
     
     break;
-  case NUM:
+  }
+  case ADDSYM: {
+    result.type = FUNC;
+    result.value = ADD;
+    break;
+  }
+  case SUBSYM: {
+    result.type = FUNC;
+    result.value = SUB;
+    break;
+  }
+  case MULSYM: {
+    result.type = FUNC;
+    result.value = MUL;
+    break;
+  }
+  case DIVSYM: {
+    result.type = FUNC;
+    result.value = DIV;
+    break;
+  }
+  case NUM: {
     result.type = ARGS;
-    result.argValue = nextToken.value;
+    result.value = nextToken.value;
 
     result.args = malloc(sizeof(struct Expression));
     *(result.args) = getNextExpression(inStream);
 
+    if ((result.args)->type == EPSILON) {
+      free(result.args);
+      result.args = NULL;
+    }
+    
     break;
-  case CLOSESYM:
+  }
+  case CLOSESYM: {
 
 #ifdef DEBUG
     printf("Slurped Closesym\n");
@@ -63,9 +96,11 @@ struct Expression getNextExpression(FILE *inStream) {
     result.type = EPSILON;
     result.args = NULL;
     break;
-  default:
+  }
+  default: {
     printf("Error. Unexpected Token.");
     break;
+  }
   }
 
   return result;

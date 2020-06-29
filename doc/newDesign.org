@@ -1,0 +1,23 @@
+* Lisp Tokens
+** OPENSYM
+*** "("
+** CLOSESYM
+*** ")"
+** ADDSYM
+*** "+"
+** SUBSYM
+*** "-"
+** MULSYM
+*** "*"
+** DIVSYM
+*** "/"
+** NUMBER
+*** [0-9]+
+* Lisp Grammar
+** sexp ->
+*** OPENSYM func args CLOSESYM
+** func ->
+*** ADDSYM | SUBSYM | MULSYM | DIVSYM
+** args ->
+*** NUMBER args | e
+
