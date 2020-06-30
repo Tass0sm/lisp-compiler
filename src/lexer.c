@@ -13,6 +13,8 @@ struct Token {
   int value;
 };
 
+char peek;
+
 struct Token getNextToken(FILE * inStream) {
   //Read all the whitespace until arriving at a possible token.
   char c;
@@ -25,6 +27,8 @@ struct Token getNextToken(FILE * inStream) {
   printf("Read character %c\n", c);
 #endif
 
+  peek = fgetc(inStream);
+  
   struct Token result;
   
   switch (c) {
@@ -60,14 +64,12 @@ struct Token getNextToken(FILE * inStream) {
 
     int val = c - '0';
 
-    char next = fgetc(inStream);
-    while (isdigit(next)) {
+    while (isdigit(peek)) {
       val *= 10;
-      val += next - '0';
-      next = fgetc(inStream);
+      val += peek - '0';
+      peek = fgetc(inStream);
     }
 
-    ungetc(next, inStream);
     result.value = val;
     break;
   default:
@@ -75,6 +77,8 @@ struct Token getNextToken(FILE * inStream) {
     break;
   }
 
+  ungetc(peek, inStream);
+  
   return result;
 }
 

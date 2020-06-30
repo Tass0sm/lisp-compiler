@@ -15,9 +15,9 @@
 *** [0-9]+
 * Lisp Grammar
 ** sexp ->
-*** OPENSYM func args CLOSESYM
+*** OPENSYM func arg* CLOSESYM
 ** func ->
 *** ADDSYM | SUBSYM | MULSYM | DIVSYM
-** args ->
-*** NUMBER args | e
+** arg ->
+*** sexp | NUMBER
 

@@ -2,7 +2,6 @@
 #define PARSER
 
 #include <stdlib.h>
-
 #include "lexer.c"
 
 enum FuncType {
@@ -10,14 +9,14 @@ enum FuncType {
 };
 
 enum ExpressionType {
-  SEXP, FUNC, ARGS, EPSILON
+  SEXP, FUNC, ARG
 };
 
 struct Expression {
   enum ExpressionType type;
-  struct Expression * func;
-  struct Expression * args;
   int value;
+  struct Expression * func;
+  struct Expression * args[10];
 };
 
 struct Expression getNextExpression(FILE *inStream) {
@@ -38,18 +37,25 @@ struct Expression getNextExpression(FILE *inStream) {
     *(result.func) = getNextExpression(inStream);
 
 #ifdef DEBUG
-    printf("Slurped Addsym.\n");
+    printf("Parsed func.\n");
 #endif
-    
-    // Get Args Expression
-    result.args = malloc(sizeof(struct Expression));
-    *(result.args) = getNextExpression(inStream);
 
+    int argIndex = 0;
+    while (peek != ')') {
+      // Get Args Expression
+      result.args[argIndex] = malloc(sizeof(struct Expression));
+      *(result.args[argIndex]) = getNextExpression(inStream);
+      argIndex++;
+    }
+
+    result.args[argIndex] = NULL;
+
+    // Slurp Close Sym
+    getNextToken(inStream);
 
 #ifdef DEBUG
     printf("Stored the args linked list and slurped close sym.\n");
 #endif
-    
     break;
   }
   case ADDSYM: {
@@ -73,28 +79,12 @@ struct Expression getNextExpression(FILE *inStream) {
     break;
   }
   case NUM: {
-    result.type = ARGS;
+    result.type = ARG;
     result.value = nextToken.value;
-
-    result.args = malloc(sizeof(struct Expression));
-    *(result.args) = getNextExpression(inStream);
-
-    if ((result.args)->type == EPSILON) {
-      free(result.args);
-      result.args = NULL;
-    }
     
-    break;
-  }
-  case CLOSESYM: {
-
 #ifdef DEBUG
-    printf("Slurped Closesym\n");
-#endif
-    
-    // End the args descent.
-    result.type = EPSILON;
-    result.args = NULL;
+    printf("Parsed one arg.\n");
+#endif // DEBUG
     break;
   }
   default: {
